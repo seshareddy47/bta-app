@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import type { Employee, Stock, Sale, ServiceRequest } from '../types';
 import { generateId } from '../utils/helpers';
 import { SEED_EMPLOYEES, SEED_STOCKS, SEED_SALES, SEED_SERVICES } from '../utils/seedData';
+import { supabase } from '../lib/supabaseClient';
 import {
   fetchServiceRowsFromSheet,
   isSheetsSyncEnabled,
@@ -42,35 +43,23 @@ interface DataContextValue {
 
 const DataContext = createContext<DataContextValue | null>(null);
 
-function loadOrSeed<T>(key: string, seed: T[]): T[] {
-  const raw = localStorage.getItem(key);
-  if (raw) return JSON.parse(raw) as T[];
-  localStorage.setItem(key, JSON.stringify(seed));
+// Fetches a table's rows; seeds it with demo data the first time a fresh Supabase project is empty.
+async function loadOrSeed<T>(table: string, seed: T[]): Promise<T[]> {
+  const { data, error } = await supabase.from(table).select('*');
+  if (error) throw error;
+  if (data && data.length > 0) return data as T[];
+  if (seed.length > 0) {
+    const { error: insertError } = await supabase.from(table).insert(seed as Record<string, unknown>[]);
+    if (insertError) throw insertError;
+  }
   return seed;
 }
 
-function persist<T>(key: string, data: T[]) {
-  localStorage.setItem(key, JSON.stringify(data));
-}
-
-const EMP_KEY = 'bta_employees';
-const STK_KEY = 'bta_stocks';
-const SALE_KEY = 'bta_sales';
-const SVC_KEY = 'bta_services';
-
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [employees, setEmployees] = useState<Employee[]>(() =>
-    loadOrSeed(EMP_KEY, SEED_EMPLOYEES)
-  );
-  const [stocks, setStocks] = useState<Stock[]>(() =>
-    loadOrSeed(STK_KEY, SEED_STOCKS)
-  );
-  const [sales, setSales] = useState<Sale[]>(() =>
-    loadOrSeed(SALE_KEY, SEED_SALES)
-  );
-  const [services, setServices] = useState<ServiceRequest[]>(() =>
-    loadOrSeed(SVC_KEY, SEED_SERVICES)
-  );
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [stocks, setStocks] = useState<Stock[]>([]);
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [services, setServices] = useState<ServiceRequest[]>([]);
 
   // ── Services <-> Google Sheet sync ──────────────────────────────────────────
   const [servicesSyncStatus, setServicesSyncStatus] =
@@ -98,7 +87,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         });
         // Keep local-only records that haven't made it to the sheet yet.
         const merged_all = [...merged, ...byServiceNo.values()];
-        persist(SVC_KEY, merged_all);
+        void supabase.from('services').upsert(merged_all);
         return merged_all;
       });
       setServicesSyncStatus('synced');
@@ -110,58 +99,72 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    // Deferred so the sheet fetch (and its state updates) run after mount
+    // Deferred so the Supabase/sheet fetches (and their state updates) run after mount
     // instead of synchronously inside the effect body.
-    void Promise.resolve().then(() => syncServicesFromSheet());
+    void Promise.resolve().then(async () => {
+      const [emp, stk, sal, svc] = await Promise.all([
+        loadOrSeed<Employee>('employees', SEED_EMPLOYEES),
+        loadOrSeed<Stock>('stocks', SEED_STOCKS),
+        loadOrSeed<Sale>('sales', SEED_SALES),
+        loadOrSeed<ServiceRequest>('services', SEED_SERVICES),
+      ]);
+      setEmployees(emp);
+      setStocks(stk);
+      setSales(sal);
+      setServices(svc);
+      void syncServicesFromSheet();
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Employees ──────────────────────────────────────────────────────────────
   function addEmployee(emp: Employee) {
-    const updated = [...employees, emp];
-    setEmployees(updated);
-    persist(EMP_KEY, updated);
+    setEmployees((prev) => [...prev, emp]);
+    void supabase.from('employees').insert(emp).then(({ error }) => {
+      if (error) setEmployees((prev) => prev.filter((e) => e.id !== emp.id));
+    });
   }
   function updateEmployee(emp: Employee) {
-    const updated = employees.map((e) => (e.id === emp.id ? emp : e));
-    setEmployees(updated);
-    persist(EMP_KEY, updated);
+    setEmployees((prev) => prev.map((e) => (e.id === emp.id ? emp : e)));
+    void supabase.from('employees').update(emp).eq('id', emp.id);
   }
   function deleteEmployee(id: string) {
-    const updated = employees.filter((e) => e.id !== id);
-    setEmployees(updated);
-    persist(EMP_KEY, updated);
+    setEmployees((prev) => prev.filter((e) => e.id !== id));
+    void supabase.from('employees').delete().eq('id', id);
   }
 
   // ── Stocks ─────────────────────────────────────────────────────────────────
   function addStock(stock: Stock) {
-    const updated = [...stocks, stock];
-    setStocks(updated);
-    persist(STK_KEY, updated);
+    setStocks((prev) => [...prev, stock]);
+    void supabase.from('stocks').insert(stock).then(({ error }) => {
+      if (error) setStocks((prev) => prev.filter((s) => s.id !== stock.id));
+    });
   }
   function updateStock(stock: Stock) {
-    const updated = stocks.map((s) => (s.id === stock.id ? stock : s));
-    setStocks(updated);
-    persist(STK_KEY, updated);
+    setStocks((prev) => prev.map((s) => (s.id === stock.id ? stock : s)));
+    void supabase.from('stocks').update(stock).eq('id', stock.id);
   }
   function deleteStock(id: string) {
-    const updated = stocks.filter((s) => s.id !== id);
-    setStocks(updated);
-    persist(STK_KEY, updated);
+    setStocks((prev) => prev.filter((s) => s.id !== id));
+    void supabase.from('stocks').delete().eq('id', id);
   }
   function decrementStock(productId: string, qty: number) {
-    const updated = stocks.map((s) =>
-      s.id === productId ? { ...s, quantity: Math.max(0, s.quantity - qty) } : s
-    );
-    setStocks(updated);
-    persist(STK_KEY, updated);
+    setStocks((prev) => {
+      const updated = prev.map((s) =>
+        s.id === productId ? { ...s, quantity: Math.max(0, s.quantity - qty) } : s
+      );
+      const next = updated.find((s) => s.id === productId);
+      if (next) void supabase.from('stocks').update({ quantity: next.quantity }).eq('id', productId);
+      return updated;
+    });
   }
 
   // ── Sales ──────────────────────────────────────────────────────────────────
   function addSale(sale: Sale) {
-    const updated = [...sales, sale];
-    setSales(updated);
-    persist(SALE_KEY, updated);
+    setSales((prev) => [...prev, sale]);
+    void supabase.from('sales').insert(sale).then(({ error }) => {
+      if (error) setSales((prev) => prev.filter((s) => s.id !== sale.id));
+    });
     if (sale.status === 'completed') {
       if (sale.items?.length) {
         sale.items.forEach((item) => {
@@ -174,14 +177,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }
   function updateSale(sale: Sale) {
-    const updated = sales.map((s) => (s.id === sale.id ? sale : s));
-    setSales(updated);
-    persist(SALE_KEY, updated);
+    setSales((prev) => prev.map((s) => (s.id === sale.id ? sale : s)));
+    void supabase.from('sales').update(sale).eq('id', sale.id);
   }
   function deleteSale(id: string) {
-    const updated = sales.filter((s) => s.id !== id);
-    setSales(updated);
-    persist(SALE_KEY, updated);
+    setSales((prev) => prev.filter((s) => s.id !== id));
+    void supabase.from('sales').delete().eq('id', id);
   }
 
   // ── Services ───────────────────────────────────────────────────────────────
@@ -198,22 +199,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
       });
   }
   function addService(service: ServiceRequest) {
-    const updated = [...services, service];
-    setServices(updated);
-    persist(SVC_KEY, updated);
+    setServices((prev) => [...prev, service]);
+    void supabase.from('services').insert(service).then(({ error }) => {
+      if (error) setServices((prev) => prev.filter((s) => s.id !== service.id));
+    });
     pushServiceChange(pushServiceUpsert(service));
   }
   function updateService(service: ServiceRequest) {
-    const updated = services.map((s) => (s.id === service.id ? service : s));
-    setServices(updated);
-    persist(SVC_KEY, updated);
+    setServices((prev) => prev.map((s) => (s.id === service.id ? service : s)));
+    void supabase.from('services').update(service).eq('id', service.id);
     pushServiceChange(pushServiceUpsert(service));
   }
   function deleteService(id: string) {
     const service = services.find((s) => s.id === id);
-    const updated = services.filter((s) => s.id !== id);
-    setServices(updated);
-    persist(SVC_KEY, updated);
+    setServices((prev) => prev.filter((s) => s.id !== id));
+    void supabase.from('services').delete().eq('id', id);
     if (service) pushServiceChange(pushServiceDelete(service.serviceNo));
   }
 
@@ -240,3 +240,4 @@ export function useData() {
 }
 
 export { generateId };
+

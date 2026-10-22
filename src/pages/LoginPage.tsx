@@ -10,7 +10,7 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     if (!email || !password) {
@@ -18,7 +18,7 @@ export function LoginPage() {
       return;
     }
     setLoading(true);
-    const result = login(email, password);
+    const result = await login(email, password);
     setLoading(false);
     if (result.success) {
       navigate('/dashboard');
@@ -71,11 +71,6 @@ export function LoginPage() {
             {loading ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
-
-        <div className="auth-hint">
-          <p>Demo credentials:</p>
-          <code>admin@bluestar.com / admin123</code>
-        </div>
 
         <p className="auth-switch">
           Don't have an account?{' '}

@@ -1,5 +1,14 @@
 # React + TypeScript + Vite
 
+## Local setup
+
+1. `npm install`
+2. Create a [Supabase](https://supabase.com) project, then open **SQL Editor** and run [supabase/schema.sql](supabase/schema.sql) once to create the tables.
+3. Copy `.env.example` to `.env.local` and fill in:
+   - `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` — from Supabase Project Settings > API
+   - `VITE_SHEETS_WEB_APP_URL` — optional, see [google-apps-script/README.md](google-apps-script/README.md)
+4. `npm run dev` — sign up for an account on first run (no seeded login exists anymore; the first `profiles` row is created by your signup).
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

@@ -21,7 +21,7 @@ export function SignupPage() {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
 
@@ -43,7 +43,7 @@ export function SignupPage() {
     }
 
     setLoading(true);
-    const result = signup(form.name, form.email, form.password, form.role);
+    const result = await signup(form.name, form.email, form.password, form.role);
     setLoading(false);
 
     if (result.success) {
