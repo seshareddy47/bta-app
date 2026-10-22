@@ -1,0 +1,74 @@
+/* ─── Bala Tripura Arcade Design System — Global Tokens ───────────────────────────────── */
+:root {
+  /* Brand — Box.com Blue */
+  --primary:        #0061d5;
+  --primary-dark:   #0057c2;
+  --primary-light:  rgba(0, 97, 213, 0.10);
+
+  /* Surfaces */
+  --bg:             #f5f6f8;
+  --surface:        #ffffff;
+  --surface-alt:    #e9eef3;
+  --teal-bg:        #dde6ed;
+
+  /* Text */
+  --text:           #151f26;
+  --text-muted:     #767676;
+  --text-inverse:   #ffffff;
+
+  /* Semantic — Box.com palette */
+  --success:        #26c281;
+  --success-bg:     rgba(38, 194, 129, 0.12);
+  --warning:        #E1AD4A;
+  --warning-bg:     rgba(225, 173, 74, 0.14);
+  --danger:         #ef4444;
+  --danger-bg:      rgba(239, 68, 68, 0.12);
+
+  /* Layout */
+  --border:         #dde6ed;
+  --border-radius:  8px;
+  --radius-lg:      12px;
+  --radius-sm:      4px;
+  --sidebar-width:  240px;
+  --topbar-height:  60px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.09), 0 2px 4px rgba(0,0,0,0.05);
+
+  /* Typography */
+  --sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+a { color: inherit; text-decoration: none; }
+
+button { cursor: pointer; font-family: var(--sans); }
+
+input, select, textarea { font-family: var(--sans); }
+
+h1, h2, h3, h4 { color: var(--text); font-weight: 700; }
