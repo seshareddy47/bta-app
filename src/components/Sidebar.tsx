@@ -1,21 +1,25 @@
 import { NavLink, useNavigate } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import { useAuth } from '../context/AuthContext';
+import type { UserRole } from '../types';
+import logo from '../assets/logo.png';
 import {
   IconDashboard, IconSales, IconEmployees, IconPackage, IconReports, IconLogout, IconService,
 } from './Icons';
 
-const NAV_ITEMS = [
+const NAV_ITEMS: { path: string; label: string; icon: ReactNode; roles?: UserRole[] }[] = [
   { path: '/dashboard', label: 'Dashboard', icon: <IconDashboard /> },
-  { path: '/sales', label: 'Sales', icon: <IconSales /> },
-  { path: '/employees', label: 'Employees', icon: <IconEmployees /> },
-  { path: '/stocks', label: 'Stocks', icon: <IconPackage /> },
-  { path: '/services', label: 'Service', icon: <IconService /> },
-  { path: '/reports', label: 'Reports', icon: <IconReports /> },
+  { path: '/sales', label: 'Sales', icon: <IconSales />, roles: ['admin'] },
+  { path: '/employees', label: 'Employees', icon: <IconEmployees />, roles: ['admin'] },
+  { path: '/stocks', label: 'Stocks', icon: <IconPackage />, roles: ['admin'] },
+  { path: '/services', label: 'Service', icon: <IconService />, roles: ['admin', 'service'] },
+  { path: '/reports', label: 'Reports', icon: <IconReports />, roles: ['admin'] },
 ];
 
 export function Sidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const navItems = NAV_ITEMS.filter((item) => !item.roles || (user && item.roles.includes(user.role)));
 
   async function handleLogout() {
     await logout();
@@ -25,7 +29,7 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar__logo">
-        {/* <span className="sidebar__logo-icon"><IconSnowflake /></span> */}
+        <img className="sidebar__logo-image" src={logo} alt="" />
         <div>
           <span className="sidebar__logo-brand">Bala Tripura Arcade</span>
           <span className="sidebar__logo-sub">Shop Manager</span>
@@ -33,7 +37,7 @@ export function Sidebar() {
       </div>
 
       <nav className="sidebar__nav">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

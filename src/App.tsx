@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
+import { ToastProvider } from './context/ToastContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppShell } from './components/AppShell';
 import { LoginPage } from './pages/LoginPage';
@@ -15,33 +16,65 @@ import { ServicesPage } from './pages/ServicesPage';
 export function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <DataProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <AppShell />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="sales" element={<SalesPage />} />
-              <Route path="employees" element={<EmployeesPage />} />
-              <Route path="stocks" element={<StocksPage />} />
-              <Route path="services" element={<ServicesPage />} />
-              <Route path="reports" element={<ReportsPage />} />
-            </Route>
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
-        </DataProvider>
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <DataProvider>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <AppShell />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="/dashboard" replace />} />
+                <Route path="dashboard" element={<DashboardPage />} />
+                <Route
+                  path="sales"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <SalesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="employees" element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <EmployeesPage />
+                  </ProtectedRoute>
+                } />
+                <Route
+                  path="stocks"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <StocksPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="services"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'service']}>
+                      <ServicesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="reports"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <ReportsPage />
+                    </ProtectedRoute>
+                  }
+                />
+              </Route>
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </DataProvider>
+        </AuthProvider>
+      </ToastProvider>
     </BrowserRouter>
   );
 }
-
-

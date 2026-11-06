@@ -12,19 +12,31 @@ export function generateServiceNo(currentCount: number): string {
   return `SRV${String(currentCount + 1).padStart(4, '0')}`;
 }
 
+const AC_CATEGORIES: AcCategory[] = ['split-ac', 'window-ac', 'cassette-ac', 'tower-ac'];
+
+export function isAcCategory(category: AcCategory): boolean {
+  return AC_CATEGORIES.includes(category);
+}
+
 export function generateSku(
   category: AcCategory,
-  tonnage: AcTonnage,
-  starRating: StarRating
+  tonnage: AcTonnage | null,
+  starRating: StarRating | null
 ): string {
   const catCode = {
     'split-ac': 'SP',
     'window-ac': 'WN',
     'cassette-ac': 'CS',
     'tower-ac': 'TW',
+    'air-cooler': 'AC',
+    'deep-freezer': 'DF',
+    'water-dispenser': 'WD',
   }[category];
-  const tonCode = tonnage.replace('.', '').replace('T', '');
-  return `BS-${catCode}-${tonCode}-${starRating}S`;
+  if (tonnage && starRating) {
+    const tonCode = tonnage.replace('.', '').replace('T', '');
+    return `BS-${catCode}-${tonCode}-${starRating}S`;
+  }
+  return `BS-${catCode}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 }
 
 export function formatRupees(n: number): string {

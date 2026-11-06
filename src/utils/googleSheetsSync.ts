@@ -24,6 +24,7 @@ const STATUS_LABELS: Record<ServiceStatus, string> = {
   'in-progress': 'In Progress',
   completed: 'Completed',
   cancelled: 'Cancelled',
+  urgent: 'Urgent',
 };
 
 function labelToComplaintType(label: string): ComplaintType {
@@ -59,12 +60,12 @@ export function serviceToSheetRow(service: ServiceRequest): SheetRow {
     'Model Number': service.modelNumber,
     'Type of Complaint': COMPLAINT_TYPE_LABELS[service.complaintType],
     'Attended Date': service.attendedDate,
-    Technician: service.technicianName,
+    Technician: service.technicianName1,
     Status: STATUS_LABELS[service.status],
   };
 }
 
-// technicianId is intentionally left blank here — the sheet only stores the technician's
+// technicianId1 is intentionally left blank here — the sheet only stores the technician's
 // name, so the caller (DataContext) resolves it against the employees list.
 export function sheetRowToService(row: SheetRow, existingId?: string): ServiceRequest {
   return {
@@ -81,8 +82,11 @@ export function sheetRowToService(row: SheetRow, existingId?: string): ServiceRe
     modelNumber: row['Model Number'] ?? '',
     complaintType: labelToComplaintType(row['Type of Complaint'] ?? ''),
     attendedDate: row['Attended Date'] ?? '',
-    technicianId: '',
-    technicianName: row['Technician'] ?? '',
+    technicianId1: '',
+    technicianName1: row['Technician'] ?? '',
+    technicianId2: '',
+    technicianName2: '',
+    notes: '',
     status: labelToStatus(row['Status'] ?? ''),
   };
 }

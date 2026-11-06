@@ -223,7 +223,8 @@ export const SEED_SERVICES: ServiceRequest[] = [
     complaintDate: '2025-02-10', customerName: 'Mohan Das', mobile: '9988776655',
     area: 'Kukatpally', townVillage: 'Hyderabad', invoiceNumber: 'INV-20250105100001',
     invoiceDate: '2025-01-05', modelNumber: 'FS518YATU', complaintType: 'gas-refill',
-    attendedDate: '2025-02-11', technicianId: 'emp-3', technicianName: 'Arun Reddy',
+    attendedDate: '2025-02-11', technicianId1: 'emp-3', technicianName1: 'Arun Reddy',
+    technicianId2: '', technicianName2: '', notes: '',
     status: 'completed',
   },
   {
@@ -231,7 +232,8 @@ export const SEED_SERVICES: ServiceRequest[] = [
     complaintDate: '2025-02-18', customerName: 'Anita Singh', mobile: '9876541230',
     area: 'Madhapur', townVillage: 'Hyderabad', invoiceNumber: 'INV-20250112100001',
     invoiceDate: '2025-01-12', modelNumber: 'FS520YATU', complaintType: 'noise-issue',
-    attendedDate: '2025-02-19', technicianId: 'emp-3', technicianName: 'Arun Reddy',
+    attendedDate: '2025-02-19', technicianId1: 'emp-3', technicianName1: 'Arun Reddy',
+    technicianId2: '', technicianName2: '', notes: '',
     status: 'completed',
   },
   {
@@ -239,7 +241,8 @@ export const SEED_SERVICES: ServiceRequest[] = [
     complaintDate: '2025-03-01', customerName: 'Suresh Iyer', mobile: '9123412345',
     area: 'Gachibowli', townVillage: 'Hyderabad', invoiceNumber: 'INV-20250203100001',
     invoiceDate: '2025-02-03', modelNumber: 'CS420YHDU', complaintType: 'water-leakage',
-    attendedDate: '', technicianId: 'emp-3', technicianName: 'Arun Reddy',
+    attendedDate: '', technicianId1: 'emp-3', technicianName1: 'Arun Reddy',
+    technicianId2: '', technicianName2: '', notes: '',
     status: 'in-progress',
   },
   {
@@ -247,7 +250,8 @@ export const SEED_SERVICES: ServiceRequest[] = [
     complaintDate: '2025-03-20', customerName: 'Vijay Mehta', mobile: '9090909090',
     area: 'Miyapur', townVillage: 'Hyderabad', invoiceNumber: 'INV-20250308100001',
     invoiceDate: '2025-03-08', modelNumber: 'PC415YA', complaintType: 'installation',
-    attendedDate: '', technicianId: '', technicianName: '',
+    attendedDate: '', technicianId1: '', technicianName1: '',
+    technicianId2: '', technicianName2: '', notes: '',
     status: 'open',
   },
 ];

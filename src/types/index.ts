@@ -1,11 +1,14 @@
 // ─── Auth ───────────────────────────────────────────────────────────────────
-export type UserRole = 'admin' | 'manager' | 'sales';
+// Login account roles — distinct from EmployeeRole (the roster is business data,
+// not tied to app access). Mirrors staff_profiles.role in Supabase.
+export type UserRole = 'admin' | 'service';
 
 export interface User {
   id: string;
   name: string;
   email: string;
   role: UserRole;
+  active: boolean;
 }
 
 // ─── Employees ───────────────────────────────────────────────────────────────
@@ -25,7 +28,9 @@ export interface Employee {
 }
 
 // ─── Stock ───────────────────────────────────────────────────────────────────
-export type AcCategory = 'split-ac' | 'window-ac' | 'cassette-ac' | 'tower-ac';
+export type AcCategory =
+  | 'split-ac' | 'window-ac' | 'cassette-ac' | 'tower-ac'
+  | 'air-cooler' | 'deep-freezer' | 'water-dispenser';
 export type AcTonnage = '1T' | '1.5T' | '2T';
 export type StarRating = 3 | 4 | 5;
 
@@ -34,8 +39,9 @@ export interface Stock {
   sku: string;
   productName: string;
   category: AcCategory;
-  tonnage: AcTonnage;
-  starRating: StarRating;
+  // Only applicable to split/window/cassette/tower AC categories — null otherwise.
+  tonnage: AcTonnage | null;
+  starRating: StarRating | null;
   modelNumber: string;
   price: number;
   quantity: number;
@@ -132,23 +138,32 @@ export interface Sale {
 export type ComplaintType =
   | 'installation' | 'gas-refill' | 'repair' | 'maintenance'
   | 'noise-issue' | 'water-leakage' | 'remote-issue' | 'other';
-export type ServiceStatus = 'open' | 'in-progress' | 'completed' | 'cancelled';
+export type ServiceStatus = 'open' | 'in-progress' | 'completed' | 'cancelled' | 'urgent';
 
 export interface ServiceRequest {
   id: string;
-  serialNo: string;           // AC unit serial number
-  serviceNo: string;          // service ticket number, e.g. SRV0001
+  serialNo: string;           // AC unit serial number — DB-generated, immutable, blank until saved
+  serviceNo: string;          // optional, manually entered; blank if not set
   complaintDate: string;      // ISO date
   customerName: string;
   mobile: string;
-  area: string;
+  area: string;               // optional
   townVillage: string;
   invoiceNumber: string;
   invoiceDate: string;        // ISO date
-  modelNumber: string;
+  modelNumber: string;        // optional
   complaintType: ComplaintType;
   attendedDate: string;       // ISO date, blank if not yet attended
-  technicianId: string;
-  technicianName: string;
+  technicianId1: string;
+  technicianName1: string;
+  technicianId2: string;      // optional
+  technicianName2: string;
   status: ServiceStatus;
+  notes: string;              // optional
+  createdById?: string | null;
+  createdByName?: string | null;
+  createdAt?: string | null;
+  updatedById?: string | null;
+  updatedByName?: string | null;
+  updatedAt?: string | null;
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { EmployeeTable } from '../components/tables/EmployeeTable';
 import { AddEmployeeForm } from '../components/forms/AddEmployeeForm';
 import { IconEmployees, IconCheckCircle, IconBan } from '../components/Icons';
@@ -9,6 +10,8 @@ type Tab = 'table' | 'add';
 export function EmployeesPage() {
   const [tab, setTab] = useState<Tab>('table');
   const { employees } = useData();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   const active = employees.filter((e) => e.status === 'active').length;
   const inactive = employees.filter((e) => e.status === 'inactive').length;
@@ -21,12 +24,14 @@ export function EmployeesPage() {
           <p className="page-subtitle">Manage shop staff and their details</p>
         </div>
         <div className="page-header-actions">
-          <button
-            className={`btn ${tab === 'add' ? 'btn--primary' : 'btn--secondary'}`}
-            onClick={() => setTab((t) => (t === 'add' ? 'table' : 'add'))}
-          >
-            {tab === 'add' ? '← Back to Table' : '+ Add Employee'}
-          </button>
+          {isAdmin && (
+            <button
+              className={`btn ${tab === 'add' ? 'btn--primary' : 'btn--secondary'}`}
+              onClick={() => setTab((t) => (t === 'add' ? 'table' : 'add'))}
+            >
+              {tab === 'add' ? '← Back to Table' : '+ Add Employee'}
+            </button>
+          )}
         </div>
       </div>
 

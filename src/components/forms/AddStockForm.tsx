@@ -1,12 +1,22 @@
 import { useState } from 'react';
 import { useData } from '../../context/DataContext';
-import { generateId, generateSku, today } from '../../utils/helpers';
+import { generateId, generateSku, isAcCategory, today } from '../../utils/helpers';
 import type { Stock, AcCategory, AcTonnage, StarRating } from '../../types';
 
 interface Props {
   onClose: () => void;
   editStock?: Stock;
 }
+
+const CATEGORY_LABELS: Record<AcCategory, string> = {
+  'split-ac': 'Split AC',
+  'window-ac': 'Window AC',
+  'cassette-ac': 'Cassette AC',
+  'tower-ac': 'Tower AC',
+  'air-cooler': 'Air Cooler',
+  'deep-freezer': 'Deep Freezer',
+  'water-dispenser': 'Water Dispenser',
+};
 
 export function AddStockForm({ onClose, editStock }: Props) {
   const { addStock, updateStock } = useData();
@@ -15,8 +25,8 @@ export function AddStockForm({ onClose, editStock }: Props) {
     productName: editStock?.productName ?? '',
     sku: editStock?.sku ?? '',
     category: (editStock?.category ?? 'split-ac') as AcCategory,
-    tonnage: (editStock?.tonnage ?? '1.5T') as AcTonnage,
-    starRating: (editStock?.starRating ?? 5) as StarRating,
+    tonnage: (editStock?.tonnage ?? '1.5T') as AcTonnage | null,
+    starRating: (editStock?.starRating ?? 5) as StarRating | null,
     modelNumber: editStock?.modelNumber ?? '',
     price: editStock?.price ?? 0,
     quantity: editStock?.quantity ?? 0,
@@ -24,25 +34,30 @@ export function AddStockForm({ onClose, editStock }: Props) {
     location: editStock?.location ?? '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const isAc = isAcCategory(form.category);
 
   function set(field: keyof typeof form) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const raw = e.target.type === 'number' ? Number(e.target.value) : e.target.value;
       setForm((prev) => {
         const next = { ...prev, [field]: raw } as typeof form;
-        // auto-update SKU when category/tonnage/starRating changes
+        if (field === 'category') {
+          const nowAc = isAcCategory(raw as AcCategory);
+          next.tonnage = nowAc ? (prev.tonnage ?? '1.5T') : null;
+          next.starRating = nowAc ? (prev.starRating ?? 5) : null;
+        }
+        // auto-update SKU/name when category/tonnage/starRating changes
         if (['category', 'tonnage', 'starRating'].includes(field)) {
           const cat = field === 'category' ? (raw as AcCategory) : prev.category;
-          const ton = field === 'tonnage' ? (raw as AcTonnage) : prev.tonnage;
-          const star = field === 'starRating' ? (Number(raw) as StarRating) : prev.starRating;
+          const ton = field === 'tonnage' ? (raw as AcTonnage) : next.tonnage;
+          const star = field === 'starRating' ? (Number(raw) as StarRating) : next.starRating;
           next.sku = generateSku(cat, ton, star);
-        }
-        if (field === 'category' || field === 'tonnage' || field === 'starRating') {
-          const cat = field === 'category' ? (raw as AcCategory) : prev.category;
-          const ton = field === 'tonnage' ? (raw as AcTonnage) : prev.tonnage;
-          const star = field === 'starRating' ? (Number(raw) as StarRating) : prev.starRating;
-          const catLabel = { 'split-ac': 'Split', 'window-ac': 'Window', 'cassette-ac': 'Cassette', 'tower-ac': 'Tower' }[cat];
-          next.productName = `Blue Star ${ton} ${star}★ ${catLabel} AC`;
+          if (isAcCategory(cat) && ton && star) {
+            const catLabel = { 'split-ac': 'Split', 'window-ac': 'Window', 'cassette-ac': 'Cassette', 'tower-ac': 'Tower' }[cat as 'split-ac' | 'window-ac' | 'cassette-ac' | 'tower-ac'];
+            next.productName = `Blue Star ${ton} ${star}★ ${catLabel} AC`;
+          } else if (field === 'category' && !isAcCategory(cat)) {
+            next.productName = `Blue Star ${CATEGORY_LABELS[cat]}`;
+          }
         }
         return next;
       });
@@ -69,6 +84,8 @@ export function AddStockForm({ onClose, editStock }: Props) {
     const stock: Stock = {
       id: editStock?.id ?? generateId(),
       ...form,
+      tonnage: isAc ? form.tonnage : null,
+      starRating: isAc ? form.starRating : null,
       lastUpdated: today(),
     };
 
@@ -87,27 +104,34 @@ export function AddStockForm({ onClose, editStock }: Props) {
             <option value="window-ac">Window AC</option>
             <option value="cassette-ac">Cassette AC</option>
             <option value="tower-ac">Tower AC</option>
+            <option value="air-cooler">Air Cooler</option>
+            <option value="deep-freezer">Deep Freezer</option>
+            <option value="water-dispenser">Water Dispenser</option>
           </select>
         </div>
-        <div className="form-group">
-          <label className="form-label" htmlFor="stk-tonnage">Tonnage</label>
-          <select className="form-select" id="stk-tonnage" value={form.tonnage} onChange={set('tonnage')}>
-            <option value="1T">1 Ton</option>
-            <option value="1.5T">1.5 Ton</option>
-            <option value="2T">2 Ton</option>
-          </select>
-        </div>
+        {isAc && (
+          <div className="form-group">
+            <label className="form-label" htmlFor="stk-tonnage">Tonnage</label>
+            <select className="form-select" id="stk-tonnage" value={form.tonnage ?? '1.5T'} onChange={set('tonnage')}>
+              <option value="1T">1 Ton</option>
+              <option value="1.5T">1.5 Ton</option>
+              <option value="2T">2 Ton</option>
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="form-row">
-        <div className="form-group">
-          <label className="form-label" htmlFor="stk-star">Star Rating</label>
-          <select className="form-select" id="stk-star" value={form.starRating} onChange={set('starRating')}>
-            <option value={3}>3 Star ★★★</option>
-            <option value={4}>4 Star ★★★★</option>
-            <option value={5}>5 Star ★★★★★</option>
-          </select>
-        </div>
+        {isAc && (
+          <div className="form-group">
+            <label className="form-label" htmlFor="stk-star">Star Rating</label>
+            <select className="form-select" id="stk-star" value={form.starRating ?? 5} onChange={set('starRating')}>
+              <option value={3}>3 Star ★★★</option>
+              <option value={4}>4 Star ★★★★</option>
+              <option value={5}>5 Star ★★★★★</option>
+            </select>
+          </div>
+        )}
         <div className="form-group">
           <label className="form-label" htmlFor="stk-sku">SKU</label>
           <input className="form-input" id="stk-sku" type="text"

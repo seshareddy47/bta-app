@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import type { UserRole } from '../types';
+import logo from '../assets/logo.png';
 
 export function SignupPage() {
   const { signup } = useAuth();
@@ -9,7 +9,6 @@ export function SignupPage() {
   const [form, setForm] = useState({
     name: '',
     email: '',
-    role: 'sales' as UserRole,
     password: '',
     confirmPassword: '',
   });
@@ -17,7 +16,7 @@ export function SignupPage() {
   const [loading, setLoading] = useState(false);
 
   function set(field: keyof typeof form) {
-    return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    return (e: React.ChangeEvent<HTMLInputElement>) =>
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
@@ -43,7 +42,7 @@ export function SignupPage() {
     }
 
     setLoading(true);
-    const result = await signup(form.name, form.email, form.password, form.role);
+    const result = await signup(form.name, form.email, form.password);
     setLoading(false);
 
     if (result.success) {
@@ -57,7 +56,7 @@ export function SignupPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-card__brand">
-          <span className="auth-brand-icon">❄️</span>
+          <img className="auth-brand-logo" src={logo} alt="" />
           <h1>Bala Tripura Arcade</h1>
           <p>Create Account</p>
         </div>
@@ -88,16 +87,10 @@ export function SignupPage() {
           </div>
           <div className="form-group">
             <label className="form-label" htmlFor="signup-role">Role</label>
-            <select
-              className="form-select"
-              id="signup-role"
-              value={form.role}
-              onChange={set('role')}
-            >
-              <option value="sales">Sales</option>
-              <option value="manager">Manager</option>
-              <option value="admin">Admin</option>
-            </select>
+            <input className="form-input form-input--readonly" id="signup-role" value="Service" readOnly />
+            <span className="form-hint">
+              An admin must activate your account. Admin access can only be granted by an existing admin.
+            </span>
           </div>
           <div className="form-group">
             <label className="form-label" htmlFor="signup-password">Password</label>

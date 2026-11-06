@@ -816,7 +816,7 @@ export function AddSaleForm({ onClose, editSale }: Props) {
       {/* ── Notes ──────────────────────────────────────────────────────────── */}
       <div className="form-group">
         <label className="form-label" htmlFor="sale-notes">Notes (optional)</label>
-        <textarea className="form-input" id="sale-notes" rows={2}
+        <textarea className="form-input" id="sale-notes" rows={4}
           placeholder="Any remarks or special instructions…"
           value={form.notes} onChange={inp('notes')}
           style={{ resize: 'vertical' }} />

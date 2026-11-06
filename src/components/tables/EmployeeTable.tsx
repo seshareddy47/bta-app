@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
 import { formatRupees, formatDate } from '../../utils/helpers';
 import { AddEmployeeForm } from '../forms/AddEmployeeForm';
 import { IconEdit, IconTrash } from '../Icons';
@@ -18,6 +19,8 @@ const ROLE_LABELS: Record<EmployeeRole, string> = {
 
 export function EmployeeTable() {
   const { employees, deleteEmployee } = useData();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [editEmp, setEditEmp] = useState<Employee | null>(null);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<EmployeeStatus | 'all'>('all');
@@ -113,12 +116,14 @@ export function EmployeeTable() {
                       </span>
                     </td>
                     <td>
-                      <div className="action-btns">
-                        <button className="btn btn--secondary btn--sm" onClick={() => setEditEmp(emp)}><IconEdit /></button>
-                        <button className="btn btn--danger btn--sm" onClick={() => {
-                          if (confirm(`Delete ${emp.name}?`)) deleteEmployee(emp.id);
-                        }}><IconTrash /></button>
-                      </div>
+                      {isAdmin && (
+                        <div className="action-btns">
+                          <button className="btn btn--secondary btn--sm" onClick={() => setEditEmp(emp)}><IconEdit /></button>
+                          <button className="btn btn--danger btn--sm" onClick={() => {
+                            if (confirm(`Delete ${emp.name}?`)) deleteEmployee(emp.id);
+                          }}><IconTrash /></button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))

@@ -35,6 +35,19 @@ export function DashboardPage() {
     return 'Good evening';
   };
 
+  if (user?.role === 'service') {
+    return (
+      <div className="page-container">
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">{greet()}, {user.name}</h1>
+            <p className="page-subtitle">Welcome to Bala Tripura Arcade.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page-container">
       <div className="page-header">

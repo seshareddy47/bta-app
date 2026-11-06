@@ -2,34 +2,14 @@ import { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { ServiceTable } from '../components/tables/ServiceTable';
 import { AddServiceForm } from '../components/forms/AddServiceForm';
+import { ServiceFormHeader } from '../components/ServiceFormHeader';
 import { IconService, IconClock, IconCheckCircle } from '../components/Icons';
 
 type Tab = 'table' | 'add';
 
-const SYNC_BADGE: Record<string, string> = {
-  idle: 'badge--primary',
-  syncing: 'badge--warning',
-  synced: 'badge--success',
-  error: 'badge--danger',
-};
-
-const SYNC_LABEL: Record<string, string> = {
-  idle: 'Not synced yet',
-  syncing: 'Syncing…',
-  synced: 'Synced',
-  error: 'Sync error',
-};
-
 export function ServicesPage() {
   const [tab, setTab] = useState<Tab>('table');
-  const {
-    services,
-    servicesSyncEnabled,
-    servicesSyncStatus,
-    servicesSyncError,
-    servicesLastSyncedAt,
-    syncServicesFromSheet,
-  } = useData();
+  const { services, servicesError, servicesLoading, refreshServices } = useData();
 
   const open = services.filter((s) => s.status === 'open').length;
   const inProgress = services.filter((s) => s.status === 'in-progress').length;
@@ -43,23 +23,6 @@ export function ServicesPage() {
           <p className="page-subtitle">Track customer complaints and service visits</p>
         </div>
         <div className="page-header-actions">
-          {servicesSyncEnabled && (
-            <>
-              <span
-                className={`badge ${SYNC_BADGE[servicesSyncStatus]}`}
-                title={servicesSyncError ?? (servicesLastSyncedAt ? `Last synced ${new Date(servicesLastSyncedAt).toLocaleString('en-IN')}` : undefined)}
-              >
-                {SYNC_LABEL[servicesSyncStatus]}
-              </span>
-              <button
-                className="btn btn--secondary"
-                onClick={() => syncServicesFromSheet()}
-                disabled={servicesSyncStatus === 'syncing'}
-              >
-                ⟳ Sync with Sheet
-              </button>
-            </>
-          )}
           <button
             className={`btn ${tab === 'add' ? 'btn--primary' : 'btn--secondary'}`}
             onClick={() => setTab((t) => (t === 'add' ? 'table' : 'add'))}
@@ -68,6 +31,16 @@ export function ServicesPage() {
           </button>
         </div>
       </div>
+
+      {servicesError && (
+        <div className="card" role="alert">
+          <p className="form-error">Could not load service data: {servicesError}</p>
+          <button className="btn btn--secondary btn--sm" type="button"
+            onClick={() => void refreshServices()} disabled={servicesLoading}>
+            {servicesLoading ? 'Retrying…' : 'Retry'}
+          </button>
+        </div>
+      )}
 
       {tab === 'table' && (
         <div className="stats-grid stats-grid--sm">
@@ -104,9 +77,7 @@ export function ServicesPage() {
 
       {tab === 'add' ? (
         <div className="card">
-          <div className="card__header">
-            <h3 className="card__title">Add Service</h3>
-          </div>
+          <ServiceFormHeader />
           <div className="card__body">
             <AddServiceForm onClose={() => setTab('table')} />
           </div>

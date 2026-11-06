@@ -10,6 +10,9 @@ const CATEGORY_LABELS: Record<AcCategory, string> = {
   'window-ac': 'Window AC',
   'cassette-ac': 'Cassette AC',
   'tower-ac': 'Tower AC',
+  'air-cooler': 'Air Cooler',
+  'deep-freezer': 'Deep Freezer',
+  'water-dispenser': 'Water Dispenser',
 };
 
 function StockQtyCell({ quantity, minStock }: { quantity: number; minStock: number }) {
@@ -20,7 +23,8 @@ function StockQtyCell({ quantity, minStock }: { quantity: number; minStock: numb
   return <span className={`stock-cell ${cls}`}>{quantity}</span>;
 }
 
-function StarDisplay({ rating }: { rating: number }) {
+function StarDisplay({ rating }: { rating: number | null }) {
+  if (!rating) return <span style={{ color: 'var(--text-muted)' }}>—</span>;
   return (
     <span className="star-display" title={`${rating} Star`}>
       {'★'.repeat(rating)}
@@ -93,7 +97,7 @@ export function StockTable() {
               style={{ maxWidth: '260px' }}
             />
             <div className="filter-tabs">
-              {(['all', 'split-ac', 'window-ac', 'cassette-ac', 'tower-ac'] as const).map((f) => (
+              {(['all', 'split-ac', 'window-ac', 'cassette-ac', 'tower-ac', 'air-cooler', 'deep-freezer', 'water-dispenser'] as const).map((f) => (
                 <button
                   key={f}
                   className={`filter-tab${filterCat === f ? ' filter-tab--active' : ''}`}
@@ -135,7 +139,7 @@ export function StockTable() {
                       <td><code className="sku-code">{stock.sku}</code></td>
                       <td><strong>{stock.productName}</strong><br /><span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{stock.modelNumber}</span></td>
                       <td>{CATEGORY_LABELS[stock.category]}</td>
-                      <td>{stock.tonnage}</td>
+                      <td>{stock.tonnage ?? '—'}</td>
                       <td><StarDisplay rating={stock.starRating} /></td>
                       <td>{formatRupees(stock.price)}</td>
                       <td><StockQtyCell quantity={stock.quantity} minStock={stock.minStock} /></td>

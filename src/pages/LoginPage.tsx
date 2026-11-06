@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import logo from '../assets/logo.png';
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -31,7 +32,7 @@ export function LoginPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-card__brand">
-          <span className="auth-brand-icon">❄️</span>
+          <img className="auth-brand-logo" src={logo} alt="" />
           <h1>Bala Tripura Arcade</h1>
           <p>Shop Manager</p>
         </div>

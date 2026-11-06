@@ -1,5 +1,11 @@
 # Google Sheet ↔ Service Tab sync
 
+**Disabled:** Service Management no longer reads from or writes to this Google
+Sheet, even if `VITE_SHEETS_WEB_APP_URL` is configured. The legacy script uses
+optional Service No as a key and does not preserve all service fields. Supabase
+is the source of truth. Do not deploy or use the legacy workflow below until it
+has been redesigned around immutable Supabase IDs and verified.
+
 The Service tab reads/writes to your Google Sheet through a small Apps Script
 "Web App" that lives inside the spreadsheet itself. No Google Cloud project,
 OAuth, or backend server is needed.
